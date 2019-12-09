@@ -107,7 +107,7 @@ export class VideoActivity implements VideoActivityBase {
 
         if (this.localVideoTrack) {
 
-            this.localVideoTrack.enabled = !this.localVideoTrack.enable;
+            this.localVideoTrack.enabled = !this.localVideoTrack.enabled;
 
         } else {
 			
