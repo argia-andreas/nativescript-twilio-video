@@ -7,7 +7,7 @@ var LocalVideo = (function (_super) {
         var _this = _super.call(this) || this;
         _this.localVideoView = TVIVideoView.alloc().init();
         _this.localVideoView.mirror = true;
-        _this.localVideoView.contentMode = UIViewContentMode.ScaleAspectFill;
+        _this.localVideoView.contentMode = 2;
         return _this;
     }
     LocalVideo.prototype.createNativeView = function () {

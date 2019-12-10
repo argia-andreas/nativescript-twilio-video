@@ -7,7 +7,7 @@ var RemoteVideo = (function (_super) {
         var _this = _super.call(this) || this;
         _this.remoteVideoView = TVIVideoView.alloc().init();
         _this.remoteVideoView.mirror = true;
-        _this.remoteVideoView.contentMode = UIViewContentMode.ScaleAspectFill;
+        _this.remoteVideoView.contentMode = 2;
         return _this;
     }
     RemoteVideo.prototype.createNativeView = function () {

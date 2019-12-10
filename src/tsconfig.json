@@ -20,7 +20,7 @@
         "preserveConstEnums": true,
         "noLib": false,
         "lib": [
-            "es6",
+            "es2016",
             "dom"
         ],
         "baseUrl": ".",

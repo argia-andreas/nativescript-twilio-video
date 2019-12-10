@@ -6,6 +6,7 @@
 		"emitDecoratorMetadata": true,
 		"noEmitHelpers": true,
 		"noEmitOnError": true,
+		"skipLibCheck": true,
 		"lib": [
 			"es6",
 			"dom"
@@ -23,5 +24,9 @@
 	"exclude": [
 		"node_modules",
 		"platforms"
-	]
+	],
+	"include": [
+        "typings-i386/*",
+        "Interop.d.ts"
+    ]
 }

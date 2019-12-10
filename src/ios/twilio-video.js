@@ -8,9 +8,12 @@ var VideoActivity = (function () {
         this._participantDelegate = delegates_1.RemoteParticipantDelegate.initWithOwner(new WeakRef(this), this);
     }
     VideoActivity.prototype.start_preview = function () {
-        this.notify('start_preview');
         this.camera = TVICameraCapturer.alloc().initWithSource(TVICameraCaptureSourceFrontCamera);
         this.localVideoTrack = TVILocalVideoTrack.trackWithCapturer(this.camera);
+        if (!this.localVideoView) {
+            this.notify('localVideoView is not set');
+            return;
+        }
         if (!this.localVideoTrack) {
             this.notify('Failed to add video track');
         }
@@ -26,7 +29,10 @@ var VideoActivity = (function () {
     };
     VideoActivity.prototype.toggle_local_video = function () {
         if (this.localVideoTrack) {
-            this.localVideoTrack.enabled = !this.localVideoTrack.enable;
+            this.localVideoTrack.enabled = !this.localVideoTrack.enabled;
+        }
+        else {
+            this.start_preview();
         }
     };
     VideoActivity.prototype.toggle_local_audio = function () {
@@ -54,6 +60,7 @@ var VideoActivity = (function () {
             builder.roomName = room;
         });
         this.room = TwilioVideo.connectWithOptionsDelegate(connectOptions, this._roomDelegate);
+        this.notify('completed');
     };
     VideoActivity.prototype.cleanupRemoteParticipant = function () {
         if (this.remoteParticipant) {
