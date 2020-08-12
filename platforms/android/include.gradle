@@ -1,0 +1,16 @@
+allprojects {
+    repositories {
+        jcenter()
+    }
+}
+
+dependencies {
+    compile 'com.twilio:video-android:4.1.1'
+}
+
+android {
+    compileOptions {
+        sourceCompatibility 1.8
+        targetCompatibility 1.8
+    }
+}
