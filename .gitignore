@@ -1,6 +1,7 @@
 node_modules
 typingsz
 tns_modules
+.DS_Store
 .env
 .vscode
 .nsbuildinfo

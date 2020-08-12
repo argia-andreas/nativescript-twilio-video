@@ -1,49 +1,65 @@
 {
-  "name": "nativescript-twilio-video",
-  "version": "1.1.6",
+  "_from": "nativescript-twilio-video@^1.1.6",
+  "_id": "nativescript-twilio-video@1.1.6",
+  "_inBundle": false,
+  "_integrity": "sha512-pYRQTxAjEaQhJtTCVw2UZKpxapewsNq0RZUIJkXKMppr5KHmlw9pk9ZnGLFTkuHNfCHRslhJw8m4j6QqLc4LTQ==",
+  "_location": "/nativescript-twilio-video",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "range",
+    "registry": true,
+    "raw": "nativescript-twilio-video@^1.1.6",
+    "name": "nativescript-twilio-video",
+    "escapedName": "nativescript-twilio-video",
+    "rawSpec": "^1.1.6",
+    "saveSpec": null,
+    "fetchSpec": "^1.1.6"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/nativescript-twilio-video/-/nativescript-twilio-video-1.1.6.tgz",
+  "_shasum": "05eb143da19eb6101b684a3dc2bcda20c1a85a50",
+  "_spec": "nativescript-twilio-video@^1.1.6",
+  "_where": "/Users/andreasgrafstrom/Sites/vuenativecourse-ts",
+  "author": {
+    "name": "Allen",
+    "email": "mackey91@gmail.com"
+  },
+  "bugs": {
+    "url": "https://github.com/armackey/nativescript-twilio-video/issues"
+  },
+  "bundleDependencies": false,
+  "deprecated": false,
   "description": "Your awesome NativeScript plugin.",
-  "main": "twilio-video",
-  "typings": "index.d.ts",
-  "nativescript": {
-    "platforms": {
-      "android": "6.0.1",
-      "ios": "6.0.1"
-    }
+  "devDependencies": {
+    "prompt": "~1.0.0",
+    "rimraf": "~2.5.0",
+    "tns-core-modules": "~6.0.0",
+    "tns-platform-declarations": "^6.0.2",
+    "typescript": "~2.2.1"
   },
-  "scripts": {
-    "precommit": "lint-staged",
-    "clean": "rm -rf node_modules package-lock.json",
-    "tsc": "tsc",
-    "build": "npm i && tsc"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/argia-andreas/nativescript-twilio-video.git"
-  },
+  "homepage": "https://github.com/armackey/nativescript-twilio-video",
   "keywords": [
     "NativeScript",
     "JavaScript",
     "Android",
     "iOS"
   ],
-  "author": {
-    "name": "Allen",
-    "email": "mackey91@gmail.com"
-  },
-  "bugs": {
-    "url": "https://github.com/argia-andreas/nativescript-twilio-video/issues"
-  },
   "license": "MIT",
-  "homepage": "https://github.com/argia-andreas/nativescript-twilio-video.git",
-  "readmeFilename": "README.md",
-  "devDependencies": {
-    "prompt": "~1.0.0",
-    "rimraf": "~2.5.0",
-    "tns-core-modules": "~6.0.0",
-    "tns-platform-declarations": "^6.2.3",
-    "typescript": "^2.2.2"
+  "main": "twilio-video",
+  "name": "nativescript-twilio-video",
+  "nativescript": {
+    "platforms": {
+      "android": "6.0.1",
+      "ios": "6.0.1"
+    }
   },
-  "dependencies": {
-    "@types/express-serve-static-core": "^4.17.0"
-  }
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/armackey/nativescript-twilio-video.git"
+  },
+  "typings": "index.d.ts",
+  "version": "1.1.6"
 }
