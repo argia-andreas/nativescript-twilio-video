@@ -1,451 +1,445 @@
-import { Observable, fromObject } from 'tns-core-modules/data/observable';
+import { Observable, fromObject } from "tns-core-modules/data/observable";
 
-declare var TVIVideoViewDelegate, TVICameraCapturerDelegate, TVIRemoteParticipantDelegate, NSObject, TVIRoomDelegate;
+declare var TVIVideoViewDelegate,
+  TVICameraCapturerDelegate,
+  TVIRemoteParticipantDelegate,
+  NSObject,
+  TVIRoomDelegate;
 // TVIRemoteParticipantDelegate
 // TVIParticipantDelegate
 
 export class DelegateEvents {
-
-    static _event: Observable = new Observable();
-
+  static _event: Observable = new Observable();
 }
 
 export class RoomDelegate extends NSObject {
+  static ObjCProtocols = [TVIRoomDelegate]; // define our native protocalls
 
-    static ObjCProtocols = [TVIRoomDelegate]; // define our native protocalls
+  private _event: Observable;
 
-    private _event: Observable;
+  private _owner: WeakRef<any>;
 
-    private _owner: WeakRef<any>;
+  public _participantDelegate: RoomDelegate;
 
-    public _participantDelegate: RoomDelegate;
+  context: any;
 
-    context: any;
+  public static initWithOwner(owner: WeakRef<any>, ctx): RoomDelegate {
+    let roomDelegate = new RoomDelegate();
 
-    public static initWithOwner(owner: WeakRef<any>, ctx): RoomDelegate {
+    roomDelegate._event = DelegateEvents._event;
 
-        let roomDelegate = new RoomDelegate();
+    roomDelegate._owner = owner;
 
-        roomDelegate._event = DelegateEvents._event
+    roomDelegate.context = ctx;
 
-        roomDelegate._owner = owner;
+    return roomDelegate;
+  }
 
-        roomDelegate.context = ctx;
+  public didConnectToRoom(room): void {
+    this.context.connectToRoomWithListener(room);
 
-        return roomDelegate;
+    this._event.notify({
+      eventName: "didConnectToRoom",
+      object: fromObject({
+        room: room,
+        count: room.remoteParticipants.count,
+      }),
+    });
+    console.log("didConnectToRoom");
+  }
 
+  public roomParticipantDidConnect(room, participant): void {
+    console.log("roomParticipantDidConnect");
+    // if (!this.context.remoteParticipant || this.context.remoteParticipant === null) {
+    //     this.context.remoteParticipant = participant;
+    //     this.context.remoteParticipant.delegate = this;
+    // }
+    this.context.participant_joined_room(participant);
+
+    this._event.notify({
+      eventName: "participantDidConnect",
+      object: fromObject({
+        room: room,
+        participant: participant,
+        count: room.remoteParticipants.count,
+      }),
+    });
+
+    console.log("participantDidConnect");
+    console.log(participant);
+  }
+  public roomParticipantDidDisconnect(room, participant): void {
+    if (this.context.remoteParticipants === participant) {
+      console.log("roomParticipantDidDisconnect");
+      this.context.cleanupRemoteParticipant();
     }
 
-    public didConnectToRoom(room): void {
+    this._event.notify({
+      eventName: "participantDidDisconnect",
+      object: fromObject({
+        room: room,
+        participant: participant,
+      }),
+    });
+    console.log("participantDidDisconnect");
+  }
 
-        this.context.connectToRoomWithListener(room);
+  public roomDidFailToConnectWithError(room, error): void {
+    this._event.notify({
+      eventName: "didFailToConnectWithError",
+      object: fromObject({
+        room: room,
+        error: error,
+      }),
+    });
+    console.log("didFailToConnectWithError");
+  }
 
-        this._event.notify({
-            eventName: 'didConnectToRoom',
-            object: fromObject({
-                room: room,
-                count: room.remoteParticipants.count
-            })
-        })
-        console.log('didConnectToRoom');
-    }
+  public roomDidDisconnectWithError(room, error): void {
+    this.context.cleanupRemoteParticipant();
+    this._event.notify({
+      eventName: "disconnectedWithError",
+      object: fromObject({
+        room: room,
+        error: error,
+      }),
+    });
+    console.log("disconnectedWithError");
+  }
 
-    public roomParticipantDidConnect(room, participant): void {
-        console.log('roomParticipantDidConnect');
-        // if (!this.context.remoteParticipant || this.context.remoteParticipant === null) {
-        //     this.context.remoteParticipant = participant;
-        //     this.context.remoteParticipant.delegate = this;
-        // }
-        this.context.participant_joined_room(participant);
+  roomDidStartRecording(room): void {
+    //     this._event.notify({
+    //         eventName: 'roomDidStartRecording',
+    //         object: fromObject({
+    //             room: room,
+    //         })
+    //     })
+    console.log("roomDidStartRecording");
+  }
+  roomDidStopRecording(room): void {
+    //     this._event.notify({
+    //         eventName: 'roomDidStopRecording',
+    //         object: fromObject({
+    //             room: room,
+    //         })
+    //     })
+    console.log("roomDidStopRecording");
+  }
 
-        this._event.notify({
-            eventName: 'participantDidConnect',
-            object: fromObject({
-                room: room,
-                participant: participant,
-                count: room.remoteParticipants.count
-            })
-        })
-
-        console.log('participantDidConnect');
-
-    }
-    public roomParticipantDidDisconnect(room, participant): void {
-
-        if (this.context.remoteParticipants === participant) {
-            console.log('roomParticipantDidDisconnect');
-            this.context.cleanupRemoteParticipant();
-        }
-
-        this._event.notify({
-            eventName: 'participantDidDisconnect',
-            object: fromObject({
-                room: room,
-                participant: participant
-            })
-        })
-        console.log('participantDidDisconnect');
-    }
-
-
-
-    public roomDidFailToConnectWithError(room, error): void {
-        this._event.notify({
-            eventName: 'didFailToConnectWithError',
-            object: fromObject({
-                room: room,
-                error: error
-            })
-        })
-        console.log('didFailToConnectWithError');
-    };
-
-    public roomDidDisconnectWithError(room, error): void {
-        this.context.cleanupRemoteParticipant();
-        this._event.notify({
-            eventName: 'disconnectedWithError',
-            object: fromObject({
-                room: room,
-                error: error
-            })
-        })
-        console.log('disconnectedWithError')
-    };
-
-    roomDidStartRecording(room): void {
-        //     this._event.notify({
-        //         eventName: 'roomDidStartRecording',
-        //         object: fromObject({
-        //             room: room,
-        //         })
-        //     })
-        console.log('roomDidStartRecording')
-    }
-    roomDidStopRecording(room): void {
-        //     this._event.notify({
-        //         eventName: 'roomDidStopRecording',
-        //         object: fromObject({
-        //             room: room,
-        //         })
-        //     })
-        console.log('roomDidStopRecording')
-    }
-
-    get events(): Observable {
-
-        return this._event;
-
-    }
-
+  get events(): Observable {
+    return this._event;
+  }
 }
 
-
 export class RemoteParticipantDelegate extends NSObject {
+  static ObjCProtocols = [TVIRemoteParticipantDelegate]; // define our native protocalls
 
-    static ObjCProtocols = [TVIRemoteParticipantDelegate]; // define our native protocalls
+  private _event: Observable;
+  private _owner: WeakRef<any>;
+  context: any;
 
-    private _event: Observable;
-    private _owner: WeakRef<any>;
-    context: any;
+  public static initWithOwner(
+    owner: WeakRef<any>,
+    ctx
+  ): RemoteParticipantDelegate {
+    let remoteParticipantDelegate = new RemoteParticipantDelegate();
 
-    public static initWithOwner(owner: WeakRef<any>, ctx): RemoteParticipantDelegate {
+    remoteParticipantDelegate._event = DelegateEvents._event;
 
-        let remoteParticipantDelegate = new RemoteParticipantDelegate();
+    remoteParticipantDelegate._owner = owner;
 
-        remoteParticipantDelegate._event = DelegateEvents._event
+    remoteParticipantDelegate.context = ctx;
 
-        remoteParticipantDelegate._owner = owner;
+    return remoteParticipantDelegate;
+  }
 
-        remoteParticipantDelegate.context = ctx;
+  public remoteParticipantPublishedVideoTrack(participant, publication): void {
+    this._event.notify({
+      eventName: "participantPublishedVideoTrack",
+      object: fromObject({
+        participant: participant,
+        publication: publication,
+      }),
+    });
+  }
 
-        return remoteParticipantDelegate;
+  public remoteParticipantUnpublishedVideoTrack(
+    participant,
+    publication
+  ): void {
+    this._event.notify({
+      eventName: "participantUnpublishedVideoTrack",
+      object: fromObject({
+        participant: participant,
+        publication: publication,
+      }),
+    });
+  }
 
-    }
+  public remoteParticipantPublishedAudioTrack(participant, publication): void {
+    this._event.notify({
+      eventName: "participantPublishedAudioTrack",
+      object: fromObject({
+        participant: participant,
+        publication: publication,
+      }),
+    });
+  }
 
+  public remoteParticipantUnpublishedAudioTrack(
+    participant,
+    publication
+  ): void {
+    this._event.notify({
+      eventName: "participantUnpublishedAudioTrack",
+      object: fromObject({
+        participant: participant,
+        publication: publication,
+      }),
+    });
+  }
 
-    public remoteParticipantPublishedVideoTrack(participant, publication): void {
-        this._event.notify({
-            eventName: 'participantPublishedVideoTrack',
-            object: fromObject({
-                participant: participant,
-                publication: publication,
-            })
-        })
-    }
+  public subscribedToVideoTrackPublicationForParticipant(
+    videoTrack,
+    publication,
+    participant
+  ): void {
+    // console.dir(this.context.remoteVideoView)
+    // videoTrack.addRenderer(this.context.remoteVideoView);
+    this.context.videoTrack = videoTrack;
 
-    public remoteParticipantUnpublishedVideoTrack(participant, publication): void {
-        this._event.notify({
-            eventName: 'participantUnpublishedVideoTrack',
-            object: fromObject({
-                participant: participant,
-                publication: publication,
-            })
-        })
-    }
+    // this.context.setupRemoteView(videoTrack, participant);
+    this._event.notify({
+      eventName: "onVideoTrackSubscribed",
+      object: fromObject({
+        videoTrack: videoTrack,
+        publication: publication,
+        participant: participant,
+      }),
+    });
+    // if (self.remoteParticipant == participant) {
+    //     [self setupRemoteView];
+    //     [videoTrack addRenderer:self.remoteView];
+    // }
+  }
 
-    public remoteParticipantPublishedAudioTrack(participant, publication): void {
-        this._event.notify({
-            eventName: 'participantPublishedAudioTrack',
-            object: fromObject({
-                participant: participant,
-                publication: publication,
-            })
-        })
-    }
+  public unsubscribedFromVideoTrackPublicationForParticipant(
+    videoTrack,
+    publication,
+    participant
+  ): void {
+    // TODO - Here we could loop through the renderers and remove them????
+    // videoTrack.removeRenderer(this.context.remoteVideoView);
+    // this.context.remoteVideoView.removeFromSuperview();
 
-    public remoteParticipantUnpublishedAudioTrack(participant, publication): void {
-        this._event.notify({
-            eventName: 'participantUnpublishedAudioTrack',
-            object: fromObject({
-                participant: participant,
-                publication: publication,
-            })
-        })
-    }
+    this._event.notify({
+      eventName: "onVideoTrackUnsubscribed",
+      object: fromObject({
+        videoTrack: videoTrack,
+        publication: publication,
+        participant: participant,
+      }),
+    });
 
-    public subscribedToVideoTrackPublicationForParticipant(videoTrack, publication, participant): void {
-        // console.dir(this.context.remoteVideoView)
-        videoTrack.addRenderer(this.context.remoteVideoView);
-        this.context.videoTrack = videoTrack;
+    // if (self.remoteParticipant == participant) {
+    //     [videoTrack removeRenderer:self.remoteView];
+    //     [self.remoteView removeFromSuperview];
+    // }
+  }
 
-        // this.context.setupRemoteView(videoTrack, participant);
-        this._event.notify({
-            eventName: 'onVideoTrackSubscribed',
-            object: fromObject({
-                videoTrack: videoTrack,
-                publication: publication,
-                participant: participant
-            })
-        })
-        // if (self.remoteParticipant == participant) {
-        //     [self setupRemoteView];
-        //     [videoTrack addRenderer:self.remoteView];
-        // }
-    }
+  public subscribedToAudioTrackPublicationForParticipant(
+    audioTrack,
+    publication,
+    participant
+  ): void {
+    this._event.notify({
+      eventName: "onAudioTrackSubscribed",
+      object: fromObject({
+        audioTrack: audioTrack,
+        publication: publication,
+        participant: participant,
+      }),
+    });
+  }
 
-    public unsubscribedFromVideoTrackPublicationForParticipant(videoTrack, publication, participant): void {
+  public unsubscribedFromAudioTrackPublicationForParticipant(
+    videoTrack,
+    publication,
+    participant
+  ): void {
+    this._event.notify({
+      eventName: "onAudioTrackUnsubscribed",
+      object: fromObject({
+        videoTrack: videoTrack,
+        publication: publication,
+        participant: participant,
+      }),
+    });
+  }
 
-        videoTrack.removeRenderer(this.context.remoteVideoView);
-        this.context.remoteVideoView.removeFromSuperview();
+  public remoteParticipantEnabledVideoTrack(participant, publication): void {
+    this._event.notify({
+      eventName: "participantEnabledVideoTrack",
+      object: fromObject({
+        publication: publication,
+        participant: participant,
+      }),
+    });
+  }
 
-        this._event.notify({
-            eventName: 'onVideoTrackUnsubscribed',
-            object: fromObject({
-                videoTrack: videoTrack,
-                publication: publication,
-                participant: participant
-            })
-        })
+  public remoteParticipantDisabledVideoTrack(participant, publication): void {
+    this._event.notify({
+      eventName: "participantDisabledVideoTrack",
+      object: fromObject({
+        publication: publication,
+        participant: participant,
+      }),
+    });
+  }
 
-        // if (self.remoteParticipant == participant) {
-        //     [videoTrack removeRenderer:self.remoteView];
-        //     [self.remoteView removeFromSuperview];
-        // }
+  public remoteParticipantEnabledAudioTrack(participant, publication): void {
+    this._event.notify({
+      eventName: "participantEnabledAudioTrack",
+      object: fromObject({
+        publication: publication,
+        participant: participant,
+      }),
+    });
+  }
 
-    }
+  public remoteParticipantDisabledAudioTrack(participant, publication): void {
+    this._event.notify({
+      eventName: "participantDisabledAudioTrack",
+      object: fromObject({
+        publication: publication,
+        participant: participant,
+      }),
+    });
+  }
 
-    public subscribedToAudioTrackPublicationForParticipant(audioTrack, publication, participant): void {
-        this._event.notify({
-            eventName: 'onAudioTrackSubscribed',
-            object: fromObject({
-                audioTrack: audioTrack,
-                publication: publication,
-                participant: participant
-            })
-        })
-    }
-
-    public unsubscribedFromAudioTrackPublicationForParticipant(videoTrack, publication, participant): void {
-        this._event.notify({
-            eventName: 'onAudioTrackUnsubscribed',
-            object: fromObject({
-                videoTrack: videoTrack,
-                publication: publication,
-                participant: participant
-            })
-        });
-    }
-
-    public remoteParticipantEnabledVideoTrack(participant, publication): void {
-        this._event.notify({
-            eventName: 'participantEnabledVideoTrack',
-            object: fromObject({
-                publication: publication,
-                participant: participant
-            })
-        });
-    }
-
-    public remoteParticipantDisabledVideoTrack(participant, publication): void {
-        this._event.notify({
-            eventName: 'participantDisabledVideoTrack',
-            object: fromObject({
-                publication: publication,
-                participant: participant
-            })
-        });
-    }
-
-    public remoteParticipantEnabledAudioTrack(participant, publication): void {
-        this._event.notify({
-            eventName: 'participantEnabledAudioTrack',
-            object: fromObject({
-                publication: publication,
-                participant: participant
-            })
-        });
-    }
-
-    public remoteParticipantDisabledAudioTrack(participant, publication): void {
-        this._event.notify({
-            eventName: 'participantDisabledAudioTrack',
-            object: fromObject({
-                publication: publication,
-                participant: participant
-            })
-        });
-    }
-
-    get events(): Observable {
-
-        return this._event;
-
-    }
-
+  get events(): Observable {
+    return this._event;
+  }
 }
 
 export class VideoViewDelegate extends NSObject {
+  public static ObjCProtocols = [TVIVideoViewDelegate];
 
-    public static ObjCProtocols = [TVIVideoViewDelegate];
+  private _event: Observable;
 
-    private _event: Observable;
+  private _owner: WeakRef<any>;
 
-    private _owner: WeakRef<any>;
+  public static initWithOwner(owner: WeakRef<any>): VideoViewDelegate {
+    let videoViewDelegate = new VideoViewDelegate();
 
-    public static initWithOwner(owner: WeakRef<any>): VideoViewDelegate {
+    videoViewDelegate._event = DelegateEvents._event;
 
-        let videoViewDelegate = new VideoViewDelegate();
+    videoViewDelegate._owner = owner;
 
-        videoViewDelegate._event = DelegateEvents._event
+    return videoViewDelegate;
+  }
 
-        videoViewDelegate._owner = owner;
+  public videoViewDidReceiveData(view: any) {
+    console.log("videoViewDidReceiveData");
+    this._event.notify({
+      eventName: "videoViewDidReceiveData",
+      object: fromObject({
+        view: view,
+      }),
+    });
+  }
 
-        return videoViewDelegate;
+  // public videoViewVideoDimensionsDidChange(view: any, dimensions: any) {
+  //     console.log('videoDimensionsDidChange');
+  //         this._event.notify({
+  //             eventName: 'videoDimensionsDidChange',
+  //             object: fromObject({
+  //                 view: view,
+  //                 dimensions: dimensions
+  //             })
+  //         });
+  //     }
+  // }
 
-    }
+  // public videoViewVideoOrientationDidChange(view: any, orientation: any) {
+  //     console.log('videoViewVideoOrientationDidChange');
+  //         this._event.notify({
+  //             eventName: 'videoViewVideoOrientationDidChange',
+  //             object: fromObject({
+  //                 view: view,
+  //                 orientation: orientation
+  //             })
+  //         });
+  //     }
+  // }
 
-
-    public videoViewDidReceiveData(view: any) {
-        console.log('videoViewDidReceiveData');
-        this._event.notify({
-            eventName: 'videoViewDidReceiveData',
-            object: fromObject({
-                view: view,
-            })
-        });
-    }
-
-    // public videoViewVideoDimensionsDidChange(view: any, dimensions: any) {
-    //     console.log('videoDimensionsDidChange');
-    //         this._event.notify({
-    //             eventName: 'videoDimensionsDidChange',
-    //             object: fromObject({
-    //                 view: view,
-    //                 dimensions: dimensions
-    //             })
-    //         });
-    //     }
-    // }
-
-    // public videoViewVideoOrientationDidChange(view: any, orientation: any) {
-    //     console.log('videoViewVideoOrientationDidChange');
-    //         this._event.notify({
-    //             eventName: 'videoViewVideoOrientationDidChange',
-    //             object: fromObject({
-    //                 view: view,
-    //                 orientation: orientation
-    //             })
-    //         });
-    //     }
-    // }
-
-    get events(): Observable {
-
-        return this._event;
-
-    }
-
+  get events(): Observable {
+    return this._event;
+  }
 }
 
 export class CameraCapturerDelegate extends NSObject {
+  public static ObjCProtocols = [TVICameraCapturerDelegate]; // define our native protocalls
 
-    public static ObjCProtocols = [TVICameraCapturerDelegate]; // define our native protocalls
+  private _event: Observable;
 
-    private _event: Observable;
+  private _owner: WeakRef<any>;
 
-    private _owner: WeakRef<any>;
+  public static initWithOwner(owner: WeakRef<any>): CameraCapturerDelegate {
+    let cameraCapturerDelegate = new CameraCapturerDelegate();
 
-    public static initWithOwner(owner: WeakRef<any>): CameraCapturerDelegate {
+    cameraCapturerDelegate._event = DelegateEvents._event;
 
-        let cameraCapturerDelegate = new CameraCapturerDelegate();
+    cameraCapturerDelegate._owner = owner;
 
-        cameraCapturerDelegate._event = DelegateEvents._event
+    return cameraCapturerDelegate;
+  }
 
-        cameraCapturerDelegate._owner = owner;
+  // public cameraCapturerPreviewDidStart(capturer: any) {
 
-        return cameraCapturerDelegate;
+  //         this._event.notify({
+  //             eventName: 'cameraCapturerPreviewDidStart',
+  //             object: fromObject({
+  //                 capturer: capturer,
+  //             })
+  //         });
+  //     }
+  // }
 
-    }
+  public cameraCapturerDidStartWithSource(capturer: any, source: any) {
+    console.log("cameraCapturer didStartWithSource");
+    this._event.notify({
+      eventName: "cameraCapturer",
+      object: fromObject({
+        capturer: capturer,
+        source: source,
+      }),
+    });
+  }
 
-    // public cameraCapturerPreviewDidStart(capturer: any) {
+  public cameraCapturerWasInterrupted(capturer: any, reason: any) {
+    console.log("cameraCapturerWasInterrupted");
+    this._event.notify({
+      eventName: "cameraCapturerWasInterrupted",
+      object: fromObject({
+        capturer: capturer,
+        reason: reason,
+      }),
+    });
+  }
 
-    //         this._event.notify({
-    //             eventName: 'cameraCapturerPreviewDidStart',
-    //             object: fromObject({
-    //                 capturer: capturer,
-    //             })
-    //         });
-    //     }
-    // }
+  public cameraCapturerDidFailWithError(capturer: any, error: any) {
+    console.log("cameraCapturerDidFailWithError");
+    this._event.notify({
+      eventName: "cameraCapturerDidFailWithError",
+      object: fromObject({
+        capturer: capturer,
+        error: error,
+      }),
+    });
+  }
 
-    public cameraCapturerDidStartWithSource(capturer: any, source: any) {
-        console.log('cameraCapturer didStartWithSource');
-        this._event.notify({
-            eventName: 'cameraCapturer',
-            object: fromObject({
-                capturer: capturer,
-                source: source
-            })
-        });
-    }
-
-
-    public cameraCapturerWasInterrupted(capturer: any, reason: any) {
-        console.log('cameraCapturerWasInterrupted');
-        this._event.notify({
-            eventName: 'cameraCapturerWasInterrupted',
-            object: fromObject({
-                capturer: capturer,
-                reason: reason,
-            })
-        });
-    }
-
-    public cameraCapturerDidFailWithError(capturer: any, error: any) {
-        console.log('cameraCapturerDidFailWithError');
-        this._event.notify({
-            eventName: 'cameraCapturerDidFailWithError',
-            object: fromObject({
-                capturer: capturer,
-                error: error,
-            })
-        });
-    }
-
-    get events(): Observable {
-
-        return this._event;
-
-    }
-
+  get events(): Observable {
+    return this._event;
+  }
 }

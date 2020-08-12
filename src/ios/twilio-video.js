@@ -7,15 +7,31 @@ var VideoActivity = (function () {
         this._roomDelegate = delegates_1.RoomDelegate.initWithOwner(new WeakRef(this), this);
         this._participantDelegate = delegates_1.RemoteParticipantDelegate.initWithOwner(new WeakRef(this), this);
     }
+    VideoActivity.prototype.remove_video_chat_twilio_listeners = function () {
+        this.event.off("onConnected");
+        this.event.off("onParticipantConnected");
+        this.event.off("onVideoTrackAdded");
+        this.event.off("onDisconnected");
+        this.event.off("onConnectFailure");
+        this.event.off("onParticipantDisconnected");
+        this.event.off("onAudioTrackAdded");
+        this.event.off("onVideoTrackRemoved");
+        this.event.off("onAudioTrackEnabled");
+        this.event.off("onAudioTrackDisabled");
+        this.event.off("onVideoTrackEnabled");
+        this.event.off("onVideoTrackDisabled");
+        this.event.off("subscribedToVideoTrackPublicationForParticipant");
+        this.event.off("unsubscribedFromVideoTrackPublicationForParticipant");
+    };
     VideoActivity.prototype.start_preview = function () {
         this.camera = TVICameraCapturer.alloc().initWithSource(TVICameraCaptureSourceFrontCamera);
         this.localVideoTrack = TVILocalVideoTrack.trackWithCapturer(this.camera);
         if (!this.localVideoView) {
-            this.notify('localVideoView is not set');
+            this.notify("localVideoView is not set");
             return;
         }
         if (!this.localVideoTrack) {
-            this.notify('Failed to add video track');
+            this.notify("Failed to add video track");
         }
         else {
             this.localVideoTrack.addRenderer(this.localVideoView);
@@ -23,7 +39,7 @@ var VideoActivity = (function () {
     };
     VideoActivity.prototype.disconnect = function () {
         if (this.room) {
-            this.notify('disconnect');
+            this.notify("disconnect");
             this.room.disconnect();
         }
     };
@@ -43,7 +59,7 @@ var VideoActivity = (function () {
     VideoActivity.prototype.connect_to_room = function (room, options) {
         var _this = this;
         if (!this.accessToken) {
-            this.notify('Please provide a valid token to connect to a room');
+            this.notify("Please provide a valid token to connect to a room");
             return;
         }
         if (options.audio) {
@@ -60,14 +76,15 @@ var VideoActivity = (function () {
             builder.roomName = room;
         });
         this.room = TwilioVideo.connectWithOptionsDelegate(connectOptions, this._roomDelegate);
-        this.notify('completed');
+        this.notify("completed");
     };
     VideoActivity.prototype.cleanupRemoteParticipant = function () {
         if (this.remoteParticipant) {
             if (this.remoteParticipant.videoTracks.count > 0) {
-                var videoTrack = this.remoteParticipant.remoteVideoTracks[0].remoteTrack;
+                var videoTrack = this.remoteParticipant.remoteVideoTracks[0]
+                    .remoteTrack;
                 try {
-                    videoTrack.removeRenderer(this.remoteVideoView);
+                    videoTrack.removeRenderer(videoTrack.renderers[0]);
                 }
                 catch (e) {
                     console.log(e);
@@ -78,10 +95,10 @@ var VideoActivity = (function () {
     };
     VideoActivity.prototype.notify = function (reason) {
         this.event.notify({
-            eventName: 'error',
+            eventName: "error",
             object: observable_1.fromObject({
-                reason: reason
-            })
+                reason: reason,
+            }),
         });
     };
     VideoActivity.prototype.connectToRoomWithListener = function (room) {
@@ -95,18 +112,26 @@ var VideoActivity = (function () {
             this.remoteParticipant = participant;
             this.remoteParticipant.delegate = this._participantDelegate;
         }
+        else {
+            alert("We already have this bloody participant!!!");
+            alert(JSON.stringify(participant));
+            this.remoteParticipant = participant;
+            this.remoteParticipant.delegate = this._participantDelegate;
+        }
     };
     VideoActivity.prototype.set_access_token = function (token) {
         this.accessToken = token;
     };
     VideoActivity.prototype.remove_remote_view = function (videoTrack, participant) {
         if (this.remoteParticipant == participant) {
-            console.log('remove_remote_view');
-            videoTrack.removeRenderer(this.remoteVideoView);
+            console.log("remove_remote_view");
+            videoTrack.removeRenderer(videoTrack.renderers[0]);
         }
     };
     VideoActivity.prototype.add_video_track = function (videoTrack) {
-        videoTrack.addRenderer(this.remoteVideoView);
+        console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+        console.log("@@@@@@@@@@@@@        WTF!!!!    @@@@@@@@@@@@@");
+        console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
     };
     VideoActivity.prototype.destroy_local_video = function () {
         this.localVideoTrack.removeRenderer(this.localVideoView);
@@ -115,7 +140,7 @@ var VideoActivity = (function () {
         if (!this.localAudioTrack) {
             this.localAudioTrack = TVILocalAudioTrack.track();
             if (!this.localAudioTrack) {
-                return 'failed to get local audio';
+                return "failed to get local audio";
             }
         }
     };

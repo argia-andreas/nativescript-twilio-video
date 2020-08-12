@@ -1,4 +1,4 @@
-import { Observable } from 'tns-core-modules/data/observable';
+import { Observable } from "tns-core-modules/data/observable";
 import { VideoActivityBase } from "../twilio-common";
 export declare class VideoActivity implements VideoActivityBase {
     localVideoView: any;
@@ -18,6 +18,7 @@ export declare class VideoActivity implements VideoActivityBase {
     private camera;
     room: any;
     constructor();
+    remove_video_chat_twilio_listeners(): void;
     start_preview(): void;
     disconnect(): void;
     toggle_local_video(): void;

@@ -1,293 +1,254 @@
-
 import { RemoteVideo } from "./remoteVideo";
 import { LocalVideo } from "./localVideo";
-import { Observable, fromObject } from 'tns-core-modules/data/observable';
-import { VideoActivityBase } from "../twilio-common"
-import { RoomDelegate, RemoteParticipantDelegate, DelegateEvents, CameraCapturerDelegate } from "./delegates";
+import { Observable, fromObject } from "tns-core-modules/data/observable";
+import { VideoActivityBase } from "../twilio-common";
+import {
+  RoomDelegate,
+  RemoteParticipantDelegate,
+  DelegateEvents,
+  CameraCapturerDelegate,
+} from "./delegates";
 import * as application from "tns-core-modules/application";
 
 declare var TVIConnectOptions,
-    TVICameraCapturer,
-    TVILocalVideoTrack,
-    TVIRemoteParticipant,
-    TwilioVideo,
-    TVILocalAudioTrack,
-    TVIRoom,
-    TVIVideoView,
-    TVICameraCaptureSourceFrontCamera;
-
+  TVICameraCapturer,
+  TVILocalVideoTrack,
+  TVIRemoteParticipant,
+  TwilioVideo,
+  TVILocalAudioTrack,
+  TVIRoom,
+  TVIVideoView,
+  TVICameraCaptureSourceFrontCamera;
 
 export class VideoActivity implements VideoActivityBase {
+  localVideoView: any;
+  remoteVideoView: any;
+  localVideoTrack: any;
+  localAudioTrack: any;
+  cameraCapturer: any;
 
-    localVideoView: any;
-    remoteVideoView: any;
-    localVideoTrack: any;
-    localAudioTrack: any;
-    cameraCapturer: any;
-    
-    accessToken: string;
-    roomObj: any;
-    previousMicrophoneMute: boolean;
-    localParticipant: any;
-    remoteParticipant: any;
-	private _cameraCapturerDelegate: any;
-    private _roomListener: any;
-    private _participantDelegate: any;
-    private _roomDelegate: any;
-	private camera: any;
-    // participant: any;
-    // event: Observable;
-    room: any;
-    
+  accessToken: string;
+  roomObj: any;
+  previousMicrophoneMute: boolean;
+  localParticipant: any;
+  remoteParticipant: any;
+  private _cameraCapturerDelegate: any;
+  private _roomListener: any;
+  private _participantDelegate: any;
+  private _roomDelegate: any;
+  private camera: any;
+  // participant: any;
+  // event: Observable;
+  room: any;
 
-    constructor() {
+  constructor() {
+    // this.event = new Observable();
 
-        // this.event = new Observable();
+    // this._cameraCapturerDelegate = CameraCapturerDelegate.initWithOwner(new WeakRef(this));
 
-        // this._cameraCapturerDelegate = CameraCapturerDelegate.initWithOwner(new WeakRef(this));
+    this._roomDelegate = RoomDelegate.initWithOwner(new WeakRef(this), this);
 
-        this._roomDelegate = RoomDelegate.initWithOwner(new WeakRef(this), this);
+    this._participantDelegate = RemoteParticipantDelegate.initWithOwner(
+      new WeakRef(this),
+      this
+    );
+  }
 
-        this._participantDelegate = RemoteParticipantDelegate.initWithOwner(new WeakRef(this), this);
+  public remove_video_chat_twilio_listeners(): void {
+    this.event.off("onConnected");
+    this.event.off("onParticipantConnected");
+    this.event.off("onVideoTrackAdded");
+    this.event.off("onDisconnected");
+    this.event.off("onConnectFailure");
+    this.event.off("onParticipantDisconnected");
+    this.event.off("onAudioTrackAdded");
+    this.event.off("onVideoTrackRemoved");
+    this.event.off("onAudioTrackEnabled");
+    this.event.off("onAudioTrackDisabled");
+    this.event.off("onVideoTrackEnabled");
+    this.event.off("onVideoTrackDisabled");
+    this.event.off("subscribedToVideoTrackPublicationForParticipant");
+    this.event.off("unsubscribedFromVideoTrackPublicationForParticipant");
+  }
 
+  start_preview() {
+    // TVICameraCapturer is not supported with the Simulator.
+    // this.camera = TVICameraCapturer.alloc().initWithSourceDelegate(TVICameraCaptureSourceFrontCamera, this._cameraCapturerDelegate);
+    this.camera = TVICameraCapturer.alloc().initWithSource(
+      TVICameraCaptureSourceFrontCamera
+    );
+
+    this.localVideoTrack = TVILocalVideoTrack.trackWithCapturer(this.camera);
+
+    if (!this.localVideoView) {
+      this.notify("localVideoView is not set");
+      return;
     }
 
-    // public remove_video_chat_twilio_listeners(): void {
+    if (!this.localVideoTrack) {
+      this.notify("Failed to add video track");
+    } else {
+      // Add renderer to video track for local preview
+      this.localVideoTrack.addRenderer(this.localVideoView);
+    }
+  }
 
-    //     this.event.off('onConnected');
-    //     this.event.off('onParticipantConnected');
-    //     this.event.off('onVideoTrackAdded');
-    //     this.event.off('onDisconnected');
-    //     this.event.off('onConnectFailure');
-    //     this.event.off('onParticipantDisconnected');
-    //     this.event.off('onAudioTrackAdded');
-    //     this.event.off('onVideoTrackRemoved');
-    //     this.event.off('onAudioTrackEnabled');
-    //     this.event.off('onAudioTrackDisabled');
-    //     this.event.off('onVideoTrackEnabled');
-    //     this.event.off('onVideoTrackDisabled');
-    //     this.event.off('subscribedToVideoTrackPublicationForParticipant');
-    //     this.event.off('unsubscribedFromVideoTrackPublicationForParticipant');
-    // }
+  disconnect() {
+    if (this.room) {
+      this.notify("disconnect");
+      this.room.disconnect();
+    }
+  }
 
+  public toggle_local_video() {
+    if (this.localVideoTrack) {
+      this.localVideoTrack.enabled = !this.localVideoTrack.enabled;
+    } else {
+      this.start_preview();
+    }
+  }
 
+  public toggle_local_audio() {
+    if (this.localAudioTrack) {
+      this.localAudioTrack.enabled = !this.localAudioTrack.enabled;
+    }
+  }
 
-	start_preview() {
-        // TVICameraCapturer is not supported with the Simulator.
-        // this.camera = TVICameraCapturer.alloc().initWithSourceDelegate(TVICameraCaptureSourceFrontCamera, this._cameraCapturerDelegate);
-        this.camera = TVICameraCapturer.alloc().initWithSource(TVICameraCaptureSourceFrontCamera);
+  connect_to_room(
+    room: string,
+    options: { video: boolean; audio: boolean }
+  ): void {
+    if (!this.accessToken) {
+      this.notify("Please provide a valid token to connect to a room");
 
-        this.localVideoTrack = TVILocalVideoTrack.trackWithCapturer(this.camera);
+      return;
+    }
 
-		if (!this.localVideoView) {
-			this.notify('localVideoView is not set');
-			return;
-		}
+    // Prepare local media which we will share with Room Participants.
+    if (options.audio) {
+      this.localAudioTrack = TVILocalAudioTrack.track();
+    }
 
-        if (!this.localVideoTrack) {
+    // Create a video track which captures from the camera.
+    if (options.video) {
+      this.start_preview();
+    }
 
-            this.notify('Failed to add video track');
+    var connectOptions = TVIConnectOptions.optionsWithTokenBlock(
+      this.accessToken,
+      (builder) => {
+        // Use the local media that we prepared earlier.
+        if (options.audio) builder.audioTracks = [this.localAudioTrack];
 
-        } else {
-            // Add renderer to video track for local preview
-            this.localVideoTrack.addRenderer(this.localVideoView);
+        if (options.video) builder.videoTracks = [this.localVideoTrack];
 
+        // The name of the Room where the Client will attempt to connect to. Please note that if you pass an empty
+        // Room `name`, the Client will create one for you. You can get the name or sid from any connected Room.
+        builder.roomName = room;
+      }
+    );
+
+    // Connect to the Room using the options we provided.
+    this.room = TwilioVideo.connectWithOptionsDelegate(
+      connectOptions,
+      this._roomDelegate
+    );
+    this.notify("completed");
+    // [self logMessage:[NSString stringWithFormat:@"Attempting to connect to room %@", self.roomTextField.text]];
+  }
+
+  cleanupRemoteParticipant() {
+    if (this.remoteParticipant) {
+      if (this.remoteParticipant.videoTracks.count > 0) {
+        var videoTrack = this.remoteParticipant.remoteVideoTracks[0]
+          .remoteTrack;
+        try {
+          // videoTrack.removeRenderer(this.remoteVideoView);
+          videoTrack.removeRenderer(videoTrack.renderers[0]);
+          // this.remoteVideoView.removeFromSuperview();
+        } catch (e) {
+          console.log(e);
+          this.notify(e);
         }
-
+      }
+      // this.remoteParticipant = null;
     }
+  }
 
-    disconnect() {
-        if (this.room) {
-			this.notify('disconnect');
-            this.room.disconnect();
-        }
+  notify(reason: string) {
+    this.event.notify({
+      eventName: "error",
+      object: fromObject({
+        reason: reason,
+      }),
+    });
+  }
+
+  public connectToRoomWithListener(room) {
+    // runs from onConnected/didConnectToRoom
+
+    if (room.remoteParticipants.count > 0) {
+      this.remoteParticipant = room.remoteParticipants[0];
+
+      this.remoteParticipant.delegate = this._participantDelegate;
     }
+  }
 
-    public toggle_local_video() {
+  public participant_joined_room(participant) {
+    if (!this.remoteParticipant) {
+      this.remoteParticipant = participant;
 
-        if (this.localVideoTrack) {
-
-            this.localVideoTrack.enabled = !this.localVideoTrack.enabled;
-
-        } else {
-			
-			this.start_preview();
-
-		}
-
+      this.remoteParticipant.delegate = this._participantDelegate;
+    } else {
+      alert("We already have this bloody participant!!!");
+      // Loop through tracks and subscribe???
+      // Somehow add to tracks anyhow....
+      alert(JSON.stringify(participant));
+      this.remoteParticipant = participant;
+      this.remoteParticipant.delegate = this._participantDelegate;
     }
+  }
 
-    public toggle_local_audio() {
+  public set_access_token(token: string) {
+    this.accessToken = token;
+  }
 
-        if (this.localAudioTrack) {
+  public remove_remote_view(videoTrack, participant): void {
+    if (this.remoteParticipant == participant) {
+      console.log("remove_remote_view");
 
-            this.localAudioTrack.enabled = !this.localAudioTrack.enabled;
+      videoTrack.removeRenderer(videoTrack.renderers[0]);
+      //   videoTrack.removeRenderer(this.remoteVideoView);
 
-        }
-
+      // this.remoteVideoView.removeFromSuperview();
     }
+  }
 
-    connect_to_room(room: string, options: { video: boolean, audio: boolean }): void {
+  public add_video_track(videoTrack) {
+    console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+    console.log("@@@@@@@@@@@@@        WTF!!!!    @@@@@@@@@@@@@");
+    console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+    // videoTrack.addRenderer(this.remoteVideoView);
+  }
 
-        if (!this.accessToken) {
+  public destroy_local_video() {
+    this.localVideoTrack.removeRenderer(this.localVideoView);
+  }
 
-            this.notify('Please provide a valid token to connect to a room');
+  public configure_audio(enable: boolean): any {
+    // We will share local audio and video when we connect to room.
 
-            return;
+    // Create an audio track.
+    if (!this.localAudioTrack) {
+      this.localAudioTrack = TVILocalAudioTrack.track();
 
-        }
-
-        // Prepare local media which we will share with Room Participants.
-        if (options.audio) {
-            this.localAudioTrack = TVILocalAudioTrack.track();
-        }
-
-        // Create a video track which captures from the camera.
-        if (options.video) {
-            this.start_preview();
-        }
-
-        var connectOptions = TVIConnectOptions.optionsWithTokenBlock(this.accessToken, (builder) => {
-
-            // Use the local media that we prepared earlier.
-            if (options.audio)
-                builder.audioTracks = [this.localAudioTrack];
-
-            if (options.video)
-                builder.videoTracks = [this.localVideoTrack];
-
-            // The name of the Room where the Client will attempt to connect to. Please note that if you pass an empty
-            // Room `name`, the Client will create one for you. You can get the name or sid from any connected Room.
-            builder.roomName = room;
-
-        });
-
-
-
-        // Connect to the Room using the options we provided.
-        this.room = TwilioVideo.connectWithOptionsDelegate(connectOptions, this._roomDelegate);
-		this.notify('completed');
-        // [self logMessage:[NSString stringWithFormat:@"Attempting to connect to room %@", self.roomTextField.text]];
-
+      if (!this.localAudioTrack) {
+        return "failed to get local audio";
+      }
     }
+  }
 
-
-    cleanupRemoteParticipant() {
-        if (this.remoteParticipant) {
-            if (this.remoteParticipant.videoTracks.count > 0) {
-                var videoTrack = this.remoteParticipant.remoteVideoTracks[0].remoteTrack;
-                try {
-                    videoTrack.removeRenderer(this.remoteVideoView);
-                    // this.remoteVideoView.removeFromSuperview();
-                } catch (e) {
-                    console.log(e);
-                    this.notify(e);
-                }
-            }
-            // this.remoteParticipant = null;
-        }
-    }
-
-    notify(reason: string) {
-
-        this.event.notify({
-            eventName: 'error',
-            object: fromObject({
-                reason: reason
-            })
-        });
-
-    }
-
-
-
-
-    public connectToRoomWithListener(room) { // runs from onConnected/didConnectToRoom
-
-        if (room.remoteParticipants.count > 0) {
-
-            this.remoteParticipant = room.remoteParticipants[0];
-
-            this.remoteParticipant.delegate = this._participantDelegate;
-
-        }
-
-    }
-
-    public participant_joined_room(participant) {
-
-        if (!this.remoteParticipant) {
-
-            this.remoteParticipant = participant;
-
-            this.remoteParticipant.delegate = this._participantDelegate;
-
-        }
-
-    }
-
-    public set_access_token(token: string) {
-
-        this.accessToken = token;
-
-    }
-
-    public remove_remote_view(videoTrack, participant): void {
-
-        if (this.remoteParticipant == participant) {
-
-            console.log('remove_remote_view');
-
-            videoTrack.removeRenderer(this.remoteVideoView);
-
-            // this.remoteVideoView.removeFromSuperview();
-
-        }
-
-    }
-
-    public add_video_track(videoTrack) {
-
-        videoTrack.addRenderer(this.remoteVideoView);
-
-    }
-
-    public destroy_local_video() {
-
-        this.localVideoTrack.removeRenderer(this.localVideoView);
-
-    }
-
-
-    public configure_audio(enable: boolean): any {
-
-        // We will share local audio and video when we connect to room.
-
-        // Create an audio track.
-        if (!this.localAudioTrack) {
-
-            this.localAudioTrack = TVILocalAudioTrack.track();
-
-            if (!this.localAudioTrack) {
-
-                return 'failed to get local audio';
-
-            }
-
-        }
-
-    }
-
-
-
-    get event(): Observable {
-
-        return DelegateEvents._event;
-
-    }
-
-
-
-
+  get event(): Observable {
+    return DelegateEvents._event;
+  }
 }
-

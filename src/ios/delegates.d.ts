@@ -1,4 +1,4 @@
-import { Observable } from 'tns-core-modules/data/observable';
+import { Observable } from "tns-core-modules/data/observable";
 declare var NSObject: any;
 export declare class DelegateEvents {
     static _event: Observable;

@@ -23,69 +23,68 @@ var RoomDelegate = (function (_super) {
     RoomDelegate.prototype.didConnectToRoom = function (room) {
         this.context.connectToRoomWithListener(room);
         this._event.notify({
-            eventName: 'didConnectToRoom',
+            eventName: "didConnectToRoom",
             object: observable_1.fromObject({
                 room: room,
-                count: room.remoteParticipants.count
-            })
+                count: room.remoteParticipants.count,
+            }),
         });
-        console.log('didConnectToRoom');
+        console.log("didConnectToRoom");
     };
     RoomDelegate.prototype.roomParticipantDidConnect = function (room, participant) {
-        console.log('roomParticipantDidConnect');
+        console.log("roomParticipantDidConnect");
         this.context.participant_joined_room(participant);
         this._event.notify({
-            eventName: 'participantDidConnect',
+            eventName: "participantDidConnect",
             object: observable_1.fromObject({
                 room: room,
                 participant: participant,
-                count: room.remoteParticipants.count
-            })
+                count: room.remoteParticipants.count,
+            }),
         });
-        console.log('participantDidConnect');
+        console.log("participantDidConnect");
+        console.log(participant);
     };
     RoomDelegate.prototype.roomParticipantDidDisconnect = function (room, participant) {
         if (this.context.remoteParticipants === participant) {
-            console.log('roomParticipantDidDisconnect');
+            console.log("roomParticipantDidDisconnect");
             this.context.cleanupRemoteParticipant();
         }
         this._event.notify({
-            eventName: 'participantDidDisconnect',
+            eventName: "participantDidDisconnect",
             object: observable_1.fromObject({
                 room: room,
-                participant: participant
-            })
+                participant: participant,
+            }),
         });
-        console.log('participantDidDisconnect');
+        console.log("participantDidDisconnect");
     };
     RoomDelegate.prototype.roomDidFailToConnectWithError = function (room, error) {
         this._event.notify({
-            eventName: 'didFailToConnectWithError',
+            eventName: "didFailToConnectWithError",
             object: observable_1.fromObject({
                 room: room,
-                error: error
-            })
+                error: error,
+            }),
         });
-        console.log('didFailToConnectWithError');
+        console.log("didFailToConnectWithError");
     };
-    ;
     RoomDelegate.prototype.roomDidDisconnectWithError = function (room, error) {
         this.context.cleanupRemoteParticipant();
         this._event.notify({
-            eventName: 'disconnectedWithError',
+            eventName: "disconnectedWithError",
             object: observable_1.fromObject({
                 room: room,
-                error: error
-            })
+                error: error,
+            }),
         });
-        console.log('disconnectedWithError');
+        console.log("disconnectedWithError");
     };
-    ;
     RoomDelegate.prototype.roomDidStartRecording = function (room) {
-        console.log('roomDidStartRecording');
+        console.log("roomDidStartRecording");
     };
     RoomDelegate.prototype.roomDidStopRecording = function (room) {
-        console.log('roomDidStopRecording');
+        console.log("roomDidStopRecording");
     };
     Object.defineProperty(RoomDelegate.prototype, "events", {
         get: function () {
@@ -112,118 +111,115 @@ var RemoteParticipantDelegate = (function (_super) {
     };
     RemoteParticipantDelegate.prototype.remoteParticipantPublishedVideoTrack = function (participant, publication) {
         this._event.notify({
-            eventName: 'participantPublishedVideoTrack',
+            eventName: "participantPublishedVideoTrack",
             object: observable_1.fromObject({
                 participant: participant,
                 publication: publication,
-            })
+            }),
         });
     };
     RemoteParticipantDelegate.prototype.remoteParticipantUnpublishedVideoTrack = function (participant, publication) {
         this._event.notify({
-            eventName: 'participantUnpublishedVideoTrack',
+            eventName: "participantUnpublishedVideoTrack",
             object: observable_1.fromObject({
                 participant: participant,
                 publication: publication,
-            })
+            }),
         });
     };
     RemoteParticipantDelegate.prototype.remoteParticipantPublishedAudioTrack = function (participant, publication) {
         this._event.notify({
-            eventName: 'participantPublishedAudioTrack',
+            eventName: "participantPublishedAudioTrack",
             object: observable_1.fromObject({
                 participant: participant,
                 publication: publication,
-            })
+            }),
         });
     };
     RemoteParticipantDelegate.prototype.remoteParticipantUnpublishedAudioTrack = function (participant, publication) {
         this._event.notify({
-            eventName: 'participantUnpublishedAudioTrack',
+            eventName: "participantUnpublishedAudioTrack",
             object: observable_1.fromObject({
                 participant: participant,
                 publication: publication,
-            })
+            }),
         });
     };
     RemoteParticipantDelegate.prototype.subscribedToVideoTrackPublicationForParticipant = function (videoTrack, publication, participant) {
-        videoTrack.addRenderer(this.context.remoteVideoView);
         this.context.videoTrack = videoTrack;
         this._event.notify({
-            eventName: 'onVideoTrackSubscribed',
+            eventName: "onVideoTrackSubscribed",
             object: observable_1.fromObject({
                 videoTrack: videoTrack,
                 publication: publication,
-                participant: participant
-            })
+                participant: participant,
+            }),
         });
     };
     RemoteParticipantDelegate.prototype.unsubscribedFromVideoTrackPublicationForParticipant = function (videoTrack, publication, participant) {
-        videoTrack.removeRenderer(this.context.remoteVideoView);
-        this.context.remoteVideoView.removeFromSuperview();
         this._event.notify({
-            eventName: 'onVideoTrackUnsubscribed',
+            eventName: "onVideoTrackUnsubscribed",
             object: observable_1.fromObject({
                 videoTrack: videoTrack,
                 publication: publication,
-                participant: participant
-            })
+                participant: participant,
+            }),
         });
     };
     RemoteParticipantDelegate.prototype.subscribedToAudioTrackPublicationForParticipant = function (audioTrack, publication, participant) {
         this._event.notify({
-            eventName: 'onAudioTrackSubscribed',
+            eventName: "onAudioTrackSubscribed",
             object: observable_1.fromObject({
                 audioTrack: audioTrack,
                 publication: publication,
-                participant: participant
-            })
+                participant: participant,
+            }),
         });
     };
     RemoteParticipantDelegate.prototype.unsubscribedFromAudioTrackPublicationForParticipant = function (videoTrack, publication, participant) {
         this._event.notify({
-            eventName: 'onAudioTrackUnsubscribed',
+            eventName: "onAudioTrackUnsubscribed",
             object: observable_1.fromObject({
                 videoTrack: videoTrack,
                 publication: publication,
-                participant: participant
-            })
+                participant: participant,
+            }),
         });
     };
     RemoteParticipantDelegate.prototype.remoteParticipantEnabledVideoTrack = function (participant, publication) {
         this._event.notify({
-            eventName: 'participantEnabledVideoTrack',
+            eventName: "participantEnabledVideoTrack",
             object: observable_1.fromObject({
                 publication: publication,
-                participant: participant
-            })
+                participant: participant,
+            }),
         });
     };
     RemoteParticipantDelegate.prototype.remoteParticipantDisabledVideoTrack = function (participant, publication) {
         this._event.notify({
-            eventName: 'participantDisabledVideoTrack',
+            eventName: "participantDisabledVideoTrack",
             object: observable_1.fromObject({
                 publication: publication,
-                participant: participant
-            })
+                participant: participant,
+            }),
         });
     };
     RemoteParticipantDelegate.prototype.remoteParticipantEnabledAudioTrack = function (participant, publication) {
         this._event.notify({
-            eventName: 'participantEnabledAudioTrack',
+            eventName: "participantEnabledAudioTrack",
             object: observable_1.fromObject({
                 publication: publication,
-                participant: participant
-            })
+                participant: participant,
+            }),
         });
     };
     RemoteParticipantDelegate.prototype.remoteParticipantDisabledAudioTrack = function (participant, publication) {
         this._event.notify({
-            eventName: 'participantDisabledAudioTrack',
+            eventName: "participantDisabledAudioTrack",
             object: observable_1.fromObject({
                 publication: publication,
-                participant: participant
-            })
+                participant: participant,
+            }),
         });
     };
     Object.defineProperty(RemoteParticipantDelegate.prototype, "events", {
@@ -249,12 +245,12 @@ var VideoViewDelegate = (function (_super) {
         return videoViewDelegate;
     };
     VideoViewDelegate.prototype.videoViewDidReceiveData = function (view) {
-        console.log('videoViewDidReceiveData');
+        console.log("videoViewDidReceiveData");
         this._event.notify({
-            eventName: 'videoViewDidReceiveData',
+            eventName: "videoViewDidReceiveData",
             object: observable_1.fromObject({
                 view: view,
-            })
+            }),
         });
     };
     Object.defineProperty(VideoViewDelegate.prototype, "events", {
@@ -280,33 +276,33 @@ var CameraCapturerDelegate = (function (_super) {
         return cameraCapturerDelegate;
     };
     CameraCapturerDelegate.prototype.cameraCapturerDidStartWithSource = function (capturer, source) {
-        console.log('cameraCapturer didStartWithSource');
+        console.log("cameraCapturer didStartWithSource");
         this._event.notify({
-            eventName: 'cameraCapturer',
+            eventName: "cameraCapturer",
             object: observable_1.fromObject({
                 capturer: capturer,
-                source: source
-            })
+                source: source,
+            }),
         });
     };
     CameraCapturerDelegate.prototype.cameraCapturerWasInterrupted = function (capturer, reason) {
-        console.log('cameraCapturerWasInterrupted');
+        console.log("cameraCapturerWasInterrupted");
         this._event.notify({
-            eventName: 'cameraCapturerWasInterrupted',
+            eventName: "cameraCapturerWasInterrupted",
             object: observable_1.fromObject({
                 capturer: capturer,
                 reason: reason,
-            })
+            }),
         });
     };
     CameraCapturerDelegate.prototype.cameraCapturerDidFailWithError = function (capturer, error) {
-        console.log('cameraCapturerDidFailWithError');
+        console.log("cameraCapturerDidFailWithError");
         this._event.notify({
-            eventName: 'cameraCapturerDidFailWithError',
+            eventName: "cameraCapturerDidFailWithError",
             object: observable_1.fromObject({
                 capturer: capturer,
                 error: error,
-            })
+            }),
         });
     };
     Object.defineProperty(CameraCapturerDelegate.prototype, "events", {
