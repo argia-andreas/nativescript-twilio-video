@@ -1,32 +1,39 @@
 {
-	"compilerOptions": {
-		"module": "commonjs",
-		"target": "es5",
-		"experimentalDecorators": true,
-		"emitDecoratorMetadata": true,
-		"noEmitHelpers": true,
-		"noEmitOnError": true,
-		"skipLibCheck": true,
-		"lib": [
-			"es6",
-			"dom"
-		],
-		"baseUrl": ".",
-		"paths": {
-			"~/*": [
-				"app/*"
-			],
-			"*": [
-				"./node_modules/*"
-			]
-		}
-	},
-	"exclude": [
-		"node_modules",
-		"platforms"
-	],
-	"include": [
-        "typings-i386/*",
-        "Interop.d.ts"
-    ]
+    "compilerOptions": {
+        "target": "es5",
+        "module": "commonjs",
+        "declaration": true,
+        "removeComments": true,
+        "skipLibCheck": true,
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "sourceMap": true,
+        "pretty": true,
+        "allowUnreachableCode": false,
+        "allowUnusedLabels": false,
+        "noEmitHelpers": true,
+        "noEmitOnError": false,
+        "noImplicitAny": false,
+        "noImplicitReturns": true,
+        "noImplicitUseStrict": false,
+        "noFallthroughCasesInSwitch": true,
+        "preserveConstEnums": true,
+        "noLib": false,
+        "lib": [
+            "es2016",
+            "dom"
+        ],
+        "baseUrl": ".",
+        "paths": {
+            "*": [
+                "./node_modules/tns-core-modules/*",
+                "./node_modules/*"
+            ]
+        }
+    },
+    "exclude": [
+        "node_modules",
+        "platforms"
+    ],
+    "compileOnSave": true
 }

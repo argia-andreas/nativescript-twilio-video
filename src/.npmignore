@@ -1,6 +1,0 @@
-node_modules
-*.ts
-!*.d.ts
-!**/**.d.ts
-!src/**/**.d.ts
-*.map
